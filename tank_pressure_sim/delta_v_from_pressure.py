@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from rocketcea.cea_obj import CEA_Obj
 
-from propellent_specs_from_pressure import PropellentSpecs
-
 # Conversions
 psi_to_pa = 6894.757293168
 inches_to_meters = 0.0254
@@ -18,6 +16,7 @@ tank_volume_meter_cube =  tank_volume_inch_cube * (inches_to_meters ** 3)
 
 OF_Ratio = 5.0
 prop_tank_to_cc_pressure = 0.6
+g_imp = 32.174 #ft/s^2
 
 
 def pressure_drop_over_sf_burn(propellent_tank_start_pressure, graph=False):
@@ -47,8 +46,8 @@ def pressure_drop_over_sf_burn(propellent_tank_start_pressure, graph=False):
 
     burn_tank_end_pressure_psi = prop_tank_pressure_data_psi[burn_end_index]
 
-    print(f"Burn Start Pressure: {burn_tank_start_pressure_psi} psi")
-    print(f"Burn end Pressure: {burn_tank_end_pressure_psi} psi")
+    # print(f"Burn Start Pressure: {burn_tank_start_pressure_psi} psi")
+    # print(f"Burn end Pressure: {burn_tank_end_pressure_psi} psi")
 
     # Turnicate theoretical cc data when propellents run out and make a copt to graph (Dosen't lag prop.tank during burn like actual CC data) -- Check that assumption is correct May be source of error for almost constant isp???
     graph_theoretical_cc_pressure_data_psi = theoretical_cc_pressure_data_psi
@@ -64,7 +63,7 @@ def pressure_drop_over_sf_burn(propellent_tank_start_pressure, graph=False):
     burn_propellent_tank_pressure_drop = (burn_tank_start_pressure_psi - burn_tank_end_pressure_psi ) / burn_tank_start_pressure_psi
     propellent_tank_residual_pressure =  1 - burn_propellent_tank_pressure_drop
 
-    print(f"Propellent tank pressure drop over burn is {burn_propellent_tank_pressure_drop*100} % ")
+    # print(f"Propellent tank pressure drop over burn is {burn_propellent_tank_pressure_drop*100} % ")
     # print(f"Sanity Check -- Calculated end pressure from Pressure drop: Prop Tank End pressure = {burn_start_pressure_psi*propellent_tank_residual_pressure} psi")
 
     # Graphing Prop Tank and CC Pressure 
@@ -80,7 +79,7 @@ def pressure_drop_over_sf_burn(propellent_tank_start_pressure, graph=False):
     return prop_tank_pressure_data_psi, theoretical_cc_pressure_data_psi, burn_tank_end_pressure_psi 
 
 
-def isp_calc(cc_pressure_data_psi, OF_Ratio):
+def isp_calc(cc_pressure_data_psi, prop_tank_pressure_data_psi, OF_Ratio):
     # Calculates Avg. ISP Over Burn -- Assumes CC Pressure follows tank pressure exactlyu *0.6 (No pressure build up in first secs)
     cea = CEA_Obj(oxName="N2O", fuelName='Ethanol')
     
@@ -89,39 +88,27 @@ def isp_calc(cc_pressure_data_psi, OF_Ratio):
     
     # Find expansion ration using call to CEA -- Only dependo on CC Pressure at Start of burn (Full Expansion at Sea Level)
     expansion_ratio = cea.get_eps_at_PcOvPe(Pc=cc_start_pressure_psi, MR=OF_Ratio, PcOvPe=cc_start_pressure_psi/ambient_pressure_psi)
-    print(f"esp={expansion_ratio}")
+    # print(f"esp={expansion_ratio}")
 
     isp_data = []
-    for cc_pressure_psi in theoretical_cc_pressure_data_psi:
-
-        # Get rid of all commented below once sure eps from above is accurate
-        # gamma = ... #Whatever cea call for gamma
-
-        # # Exit Mach -- Rearagned From Mach & isentropic pressure relation (since stagnation pressure ~= cc pressure)
-        # Me = np.sqrt((2.0/(gamma - 1)) * (((cc_pressure_psi/ambient_pressure_psi)**((gamma - 1)/gamma)) - 1))
-
-        # # Expansion Ratio -- from Nozzle Area Ratio for isentropic flow eqn
-        # sqrt_coeff_1 = 2 / (gamma + 1)
-        # sqrt_coeff_2 = 1 + ((gamma - 1) / 2)* Me**2
-        # sqrt_power = (gamma + 1) / (gamma - 1)
-        # expansion_ratio = (1/Me) * np.sqrt((sqrt_coeff_1*sqrt_coeff_2) ** sqrt_power)
-        # print("EPS=",expansion_ratio)
+    for cc_pressure_psi in cc_pressure_data_psi:
 
         # CEA call to get instant isp at current pressure
-        instant_isp = cea.isp = cea.get_Isp(Pc=cc_pressure_psi,
+        instant_isp = cea.isp = cea.estimate_Ambient_Isp(Pc=cc_pressure_psi,
                         MR=OF_Ratio,
-                        eps=expansion_ratio)
+                        eps=expansion_ratio,
+                        Pamb=ambient_pressure_psi)
         
-        isp_data.append(instant_isp)
-        # print(f"CC Pressure={cc_pressure_psi} psi, instant isp={instant_isp} s") --- Note isp dosen't change much over burn even when pressure drops over 150 psi. SOmthing may be wrong -- Might need to change eps???
+        isp_data.append(instant_isp[0])
+        # print(f"CC Pressure={cc_pressure_psi} psi, instant isp={instant_isp} s") ##--- Note isp dosen't change much over burn even when pressure drops over 150 psi. SOmthing may be wrong -- Might need to change eps???
     
-    isp_avg = np.average(isp_data)
-    isp_weighted_avg = np.average(isp_data, weights=prop_tank_pressure_data_psi)
+    # isp_avg = np.average(isp_data)
+    isp_weighted_avg = np.average(isp_data, weights=prop_tank_pressure_data_psi) 
 
-    print(f"Avg isp: {isp_avg} s")
-    print(f"Weighted Avg isp: {isp_weighted_avg} s")
+    # print(f"Avg isp: {isp_avg} s")
+    # print(f"Weighted Avg isp: {isp_weighted_avg} s")
         
-    return isp
+    return isp_weighted_avg
 
 
 def residual_vapour_mass(burn_tank_end_pressure_psi, prop_tank_volume_meter_cube):
@@ -133,17 +120,22 @@ def residual_vapour_mass(burn_tank_end_pressure_psi, prop_tank_volume_meter_cube
 
     return ox_vapour_mass
 
-prop_tank_start_pressure_psi = 800
 
-prop_tank_pressure_data_psi, theoretical_cc_pressure_data_psi, burn_tank_end_pressure_psi = pressure_drop_over_sf_burn(prop_tank_start_pressure_psi, graph=True)
-isp = isp_calc(theoretical_cc_pressure_data_psi, OF_Ratio)
-
-reisidual_propellent_mass = residual_vapour_mass(burn_tank_end_pressure_psi, tank_volume_meter_cube)
-print(f"\nResidual Propellent (N2O Vapour) Mass: {reisidual_propellent_mass} kg")
+def delta_v_calc(avg_isp, wet_mass, dry_mass):
+    c = avg_isp / g_imp
+    dv_ft_per_sec = c * np.log(wet_mass/dry_mass)
+    return dv_ft_per_sec
 
 
-def calc_delta_v(avg_isp, dry_mass, reisidual_propellent_mass):
-    pass
+
+# prop_tank_start_pressure_psi = 800
+
+# prop_tank_pressure_data_psi, theoretical_cc_pressure_data_psi, burn_tank_end_pressure_psi = pressure_drop_over_sf_burn(prop_tank_start_pressure_psi, graph=True)
+# isp_avg = isp_calc(theoretical_cc_pressure_data_psi, prop_tank_pressure_data_psi, OF_Ratio)
+
+# reisidual_propellent_mass = residual_vapour_mass(burn_tank_end_pressure_psi, tank_volume_meter_cube)
+# print(f"\nResidual Propellent (N2O Vapour) Mass: {reisidual_propellent_mass} kg")
+
 
 # Next Steps:
 # Find correct call to get gamma
@@ -151,11 +143,3 @@ def calc_delta_v(avg_isp, dry_mass, reisidual_propellent_mass):
 # Finally, get dv using dry_mass = 135 lb + residual prop mass, wet_mass = 135 + inital propellent (total) mass (incl. ullage) and avg. isp
 
 # Then, graph dv v pressure from 400 psi to 800 psi to find max dv and Graph Results.
-
-
- 
-
-
-
-
-

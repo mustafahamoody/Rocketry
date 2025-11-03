@@ -9,7 +9,6 @@ Assumptions: Constant Ullage by Volume
 import CoolProp.CoolProp as CP
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 
 # Conversions
 psi_to_pa = 6894.757293168
@@ -24,7 +23,7 @@ def oxTankVolume(ullage_by_volume, OF_Ratio, tank_volume_meter_cube, ox_liquid_d
     return ox_volume
 
 
-def PropellentSpecs(pressure_psi, ullage_by_volume, OF_Ratio, tank_volume_meter_cube):
+def propellent_specs(pressure_psi, ullage_by_volume, OF_Ratio, tank_volume_meter_cube):
     # Oxizizer Mass
     # --> Mass = volume x density
     # --> Density: updates with pressure from changing tank temp.
@@ -62,7 +61,7 @@ def propellent_mass_by_pressure_graph(ullage_by_volume, OF_Ratio, tank_volume_me
     fuel_tank_volumes_inches_cube = []
 
     for P_psi in psi_pressures:
-        ox_mass, fuel_mass, ox_vapour_mass, ox_tank_volume_meter_cube, fuel_tank_volume_meter_cube = PropellentSpecs(P_psi, ullage_by_volume, OF_Ratio, tank_volume_meter_cube)
+        ox_mass, fuel_mass, ox_vapour_mass, ox_tank_volume_meter_cube, fuel_tank_volume_meter_cube = propellent_specs(P_psi, ullage_by_volume, OF_Ratio, tank_volume_meter_cube)
        
         fuel_masses.append(fuel_mass)
         ox_liquid_masses.append(ox_mass)
@@ -117,7 +116,7 @@ def main():
     OF_Ratio = 5.0
     
     # Propellent Mass and Tank Specs
-    ox_mass, fuel_mass, ox_vapour_mass, ox_tank_volume_meter_cube, fuel_tank_volume_meter_cube = PropellentSpecs(pressure_psi, ullage_by_volume, OF_Ratio, tank_volume_meter_cube)
+    ox_mass, fuel_mass, ox_vapour_mass, ox_tank_volume_meter_cube, fuel_tank_volume_meter_cube = propellent_specs(pressure_psi, ullage_by_volume, OF_Ratio, tank_volume_meter_cube)
 
     ox_tank_volume_inch_cube = ox_tank_volume_meter_cube / (inches_to_meters ** 3)
     fuel_tank_volume_inch_cube = fuel_tank_volume_meter_cube / (inches_to_meters ** 3)
