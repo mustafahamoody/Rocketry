@@ -28,7 +28,7 @@ OF_Ratio = 5.0
 # # Graph Propellent Masses and Tank Volume from 400 to 800 psi (in incerments of 50 psi) 
 # propellent_mass_by_pressure_graph(ullage_by_volume, OF_Ratio, tank_volume_meter_cube)
 
-def tank_pressure_sim(pressure_min_psi, pressure_max_psi_exclusive, pressure_step_psi):
+def tank_pressure_sim(pressure_min_psi, pressure_max_psi_exclusive, pressure_step_psi, one_graph):
 
     psi_pressures = np.arange(pressure_min_psi, pressure_max_psi_exclusive, pressure_step_psi) 
     
@@ -81,25 +81,42 @@ def tank_pressure_sim(pressure_min_psi, pressure_max_psi_exclusive, pressure_ste
     print("Full Sim Output")
     print(sim_df)
 
-    # Graph of Simulation
-    plt.figure(1)
-    plt.plot(sim_df.index, sim_df["delta_v"], label="delta v")
-    plt.xlabel("Pressure (Psi)")
-    plt.ylabel("delta v (ft/s)")
-    plt.legend()
-    
-    plt.figure(2)
-    plt.plot(sim_df.index, sim_df["avg_isp"], label="isp")
-    plt.xlabel("Pressure (Psi)")
-    plt.ylabel("isp (s)")
-    plt.legend()
-    # plt.plot(sim_df.index, sim_df["fuel_mass"], label="fuel mass")
-    # plt.plot(sim_df.index, sim_df["ox_mass"], label="oxidizer mass")
-    plt.show()
+    if one_graph:
+        # full Graph of Simulation 
+        plt.plot(sim_df.index, sim_df["delta_v"], label="delta v (ft/s)")
+        plt.plot(sim_df.index, sim_df["avg_isp"], label="isp (s)")
+        plt.plot(sim_df.index, sim_df["fuel_mass"], label="fuel mass (kg)")
+        plt.plot(sim_df.index, sim_df["ox_mass"], label="oxidizer mass (kg)")
+        plt.xlabel("Pressure (Psi)")
+        plt.ylabel("Data with Respective Value")
+        plt.legend()
+        plt.show()
+    else:
+    # Seperate Graph of Simulation
+        plt.figure(1)
+        plt.plot(sim_df.index, sim_df["delta_v"], 'r')
+        plt.title("Delta V")
+        plt.xlabel("Pressure (Psi)")
+        plt.ylabel("delta v (ft/s)")
+
+        plt.figure(2)
+        plt.plot(sim_df.index, sim_df["avg_isp"], 'c')
+        plt.title("Isp")
+        plt.xlabel("Pressure (Psi)")
+        plt.ylabel("isp (s)")
+
+        plt.figure(3)
+        plt.title("Propellent Masses")
+        plt.plot(sim_df.index, sim_df["fuel_mass"], 'g', label="fuel mass (kg)")
+        plt.plot(sim_df.index, sim_df["ox_mass"], 'b', label="oxidizer mass (kg)")
+        plt.xlabel("Pressure (Psi)")
+        plt.ylabel("Propellent Mass (kg)")
+        plt.legend()
+        plt.show()
 
     return sim_df
 
-sim_data = tank_pressure_sim(pressure_min_psi=100, pressure_max_psi_exclusive=850, pressure_step_psi=50)
+sim_data = tank_pressure_sim(pressure_min_psi=100, pressure_max_psi_exclusive=850, pressure_step_psi=50, one_graph=True)
 
 
 
