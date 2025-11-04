@@ -15,11 +15,10 @@ tank_volume_inch_cube = np.pi*np.square((tank_id_inches/2))*tank_height_inches
 tank_volume_meter_cube =  tank_volume_inch_cube * (inches_to_meters ** 3)
 
 OF_Ratio = 5.0
-prop_tank_to_cc_pressure = 0.6
 g_imp = 32.174 #ft/s^2
 
 
-def pressure_drop_over_sf_burn(propellent_tank_start_pressure, graph=False):
+def pressure_drop_over_sf_burn(propellent_tank_start_pressure, prop_tank_to_cc_pressure=0.6, graph=False):
     # Extracting Important LSF5 Data
     # LSF5 Data CSV
     LSF5_df = pd.read_csv("LSF5_data.csv")

@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 psi_to_pa = 6894.757293168
 inches_to_meters = 0.0254
 prop_tank_to_cc_pressure = 0.6
+deg_k_to_c = 273.15
 
 
 def oxTankVolume(ullage_by_volume, OF_Ratio, tank_volume_meter_cube, ox_liquid_density, fuel_density):
@@ -44,7 +45,10 @@ def propellent_specs(pressure_psi, ullage_by_volume, OF_Ratio, tank_volume_meter
     fuel_mass = fuel_density * fuel_tank_volume_meter_cube
     ox_vapour_mass = (ullage_by_volume * ox_tank_volume_meter_cube) * ox_vapour_density
 
-    return ox_mass, fuel_mass, ox_vapour_mass, ox_tank_volume_meter_cube, fuel_tank_volume_meter_cube
+    ox_temp_k = CP.PropsSI('T', 'P', pressure_pa, 'Q', 0, 'N2O')
+    ox_temp_deg_c = ox_temp_k - deg_k_to_c
+
+    return ox_mass, fuel_mass, ox_vapour_mass, ox_temp_deg_c, ox_tank_volume_meter_cube, fuel_tank_volume_meter_cube
 
 
 def propellent_mass_by_pressure_graph(ullage_by_volume, OF_Ratio, tank_volume_meter_cube):
