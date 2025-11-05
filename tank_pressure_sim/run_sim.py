@@ -95,25 +95,25 @@ def tank_pressure_sim(pressure_min_psi, pressure_max_psi_exclusive, pressure_ste
     else:
     # Seperate Graph of Simulation
         plt.figure(1)
-        plt.title("Delta V")
+        plt.title("Tank Pressure Sim: Delta V")
         plt.plot(sim_df.index, sim_df["delta_v"], 'r')
         plt.xlabel("Pressure (Psi)")
         plt.ylabel("delta v (ft/s)")
 
         plt.figure(2)
-        plt.title("Isp")
+        plt.title("Tank Pressure Sim: Isp")
         plt.plot(sim_df.index, sim_df["avg_isp"], 'c')
         plt.xlabel("Pressure (Psi)")
         plt.ylabel("Isp (s)")
 
         plt.figure(3)
-        plt.title("Oxidizer Temperature")
+        plt.title("Tank Pressure Sim: Oxidizer Temperature")
         plt.plot(sim_df.index, sim_df["ox_temp_deg_c"], 'm')
         plt.xlabel("Pressure (Psi)")
         plt.ylabel("Oxidizer Temp. (°C)")
 
         plt.figure(4)
-        plt.title("Propellent Masses")
+        plt.title("Tank Pressure Sim: Propellent Masses")
         plt.plot(sim_df.index, sim_df["fuel_mass"], 'g', label="fuel mass (kg)")
         plt.plot(sim_df.index, sim_df["ox_mass"], 'b', label="oxidizer mass (kg)")
         plt.xlabel("Pressure (Psi)")
@@ -159,7 +159,7 @@ def blowdown_systems_comparison(blowdown_system_masses, tank_sim_df):
 
     # Graphed Comparison
     plt.figure(1)
-    plt.title("Delta V")
+    plt.title("Tank Architecture Sim: Delta V")
     plt.plot(tank_sim_df.index, tank_sim_df["delta_v"], label="Our Archetecture (psi)")
     plt.plot(sim_df.index, sim_df["delta_v"], label="Nitrogen Piloted (kg)")
     plt.xlabel("Data with Respective Value")
@@ -167,7 +167,7 @@ def blowdown_systems_comparison(blowdown_system_masses, tank_sim_df):
     plt.legend()
 
     plt.figure(2)
-    plt.title("Isp")
+    plt.title("Tank Architecture Sim: Isp")
     plt.plot(tank_sim_df.index, tank_sim_df["avg_isp"], label="Our Archetecture (psi)")
     plt.plot(sim_df.index, sim_df["avg_isp"], label="Nitrogen Piloted (kg)")
     plt.xlabel("Data with Respective Value")
