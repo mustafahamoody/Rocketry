@@ -130,12 +130,12 @@ def blowdown_systems_comparison(blowdown_system_masses, tank_sim_df):
     
     sim_df = pd.DataFrame(columns=["blowdown_system_mass", "delta_v", "avg_isp"])
     
+    ox_mass, fuel_mass, ox_vapour_mass, _,  _, _ = propellent_specs(tank_pressure_psi, ullage_by_volume, OF_Ratio, tank_volume_meter_cube)
+    prop_tank_pressure_data_psi, theoretical_cc_pressure_data_psi, burn_tank_end_pressure_psi = pressure_drop_over_sf_burn(tank_pressure_psi, prop_tank_to_cc_pressure=1.5, graph=False)
+    isp_avg = isp_calc(theoretical_cc_pressure_data_psi, prop_tank_pressure_data_psi, OF_Ratio)
+    reisidual_propellent_mass = residual_vapour_mass(burn_tank_end_pressure_psi, tank_volume_meter_cube)
+
     for blowdown_system_mass in blowdown_system_masses:
-        ox_mass, fuel_mass, ox_vapour_mass, _,  _, _ = propellent_specs(tank_pressure_psi, ullage_by_volume, OF_Ratio, tank_volume_meter_cube)
-        prop_tank_pressure_data_psi, theoretical_cc_pressure_data_psi, burn_tank_end_pressure_psi = pressure_drop_over_sf_burn(tank_pressure_psi, prop_tank_to_cc_pressure=1.5, graph=False)
-        isp_avg = isp_calc(theoretical_cc_pressure_data_psi, prop_tank_pressure_data_psi, OF_Ratio)
-        reisidual_propellent_mass = residual_vapour_mass(burn_tank_end_pressure_psi, tank_volume_meter_cube)
-        
         initial_propellent_mass = fuel_mass + ox_mass + ox_vapour_mass
         wet_mass = vehicle_mass_kg + initial_propellent_mass + blowdown_system_mass
         dry_mass = vehicle_mass_kg + reisidual_propellent_mass + blowdown_system_mass
@@ -150,7 +150,6 @@ def blowdown_systems_comparison(blowdown_system_masses, tank_sim_df):
     optimal_mass_kg = sim_df["delta_v"].idxmax()
     optimal_data = sim_df.loc[optimal_mass_kg]
     max_dv = optimal_data["delta_v"]
-    isp_optimal_pressure = optimal_data["avg_isp"]
 
     # Sim Output
     print("\nARCHITECTURE COMPARISON SIMULATION COMPLETE")
@@ -177,6 +176,6 @@ def blowdown_systems_comparison(blowdown_system_masses, tank_sim_df):
     plt.show()
 
 
-tank_sim_df = tank_pressure_sim(pressure_min_psi=100, pressure_max_psi_exclusive=850, pressure_step_psi=50, one_graph=True)
-blowdown_systems_masses = [5, 10, 15, 20, 25, 30]
-blowdown_systems_comparison(blowdown_systems_masses, tank_sim_df)
+tank_sim_df = tank_pressure_sim(pressure_min_psi=100, pressure_max_psi_exclusive=850, pressure_step_psi=50, one_graph=False)
+blowdown_systems_masses_kg = [5, 10, 15, 20, 25, 30] #kg
+blowdown_systems_comparison(blowdown_systems_masses_kg, tank_sim_df)
