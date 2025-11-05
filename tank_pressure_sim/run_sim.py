@@ -32,7 +32,7 @@ def tank_pressure_sim(pressure_min_psi, pressure_max_psi_exclusive, pressure_ste
     psi_pressures = np.arange(pressure_min_psi, pressure_max_psi_exclusive, pressure_step_psi) 
     
     # Create empty DataFrame with all specs 
-    sim_df = pd.DataFrame(columns=["tank_pressure_psi", "delta_v", "avg_isp", "prop_tank_temp_deg_c", "fuel_mass", "ox_mass", "fuel_tank_volume_inch_cube", "ox_tank_volume_inch_cube"])
+    sim_df = pd.DataFrame(columns=["tank_pressure_psi", "delta_v", "avg_isp", "ox_temp_deg_c", "fuel_mass", "ox_mass", "fuel_tank_volume_inch_cube", "ox_tank_volume_inch_cube"])
 
     for tank_pressure_psi in psi_pressures:
         # Propellent Mass and Tank Specs
@@ -64,7 +64,7 @@ def tank_pressure_sim(pressure_min_psi, pressure_max_psi_exclusive, pressure_ste
     optimal_data = sim_df.loc[optimal_pressure_psi]
     max_dv = optimal_data["delta_v"]
     isp_optimal_pressure = optimal_data["avg_isp"]
-    optimal_temp_deg_c = optimal_data["prop_tank_temp_deg_c"]
+    optimal_temp_deg_c = optimal_data["ox_temp_deg_c"]
     optimal_fuel_mass = optimal_data["fuel_mass"]
     optimal_ox_mass = optimal_data["ox_mass"]
     optimal_fuel_tank_volume_inch_cube = optimal_data["fuel_tank_volume_inch_cube"]
@@ -75,7 +75,7 @@ def tank_pressure_sim(pressure_min_psi, pressure_max_psi_exclusive, pressure_ste
     print(f"A maximum delta v of {max_dv} ft/s is achieved at a tank pressure of {optimal_pressure_psi} psi")
     print("Specs at this Pressure:")
     print(f"Isp: {isp_optimal_pressure}")
-    print(f"Prop Tank Temp: {optimal_temp_deg_c} °C")
+    print(f"Oxidizer Temp: {optimal_temp_deg_c} °C")
     print(f"Fuel Mass: {optimal_fuel_mass} kg, Liquid Oxidizer Mass: {optimal_ox_mass} kg")
     print(f"Fuel Tank Volume: {optimal_fuel_tank_volume_inch_cube} in^3, Oxidizer Tank Volume: {optimal_ox_tank_volume_inch_cube} in^3 \n")
     print("Full Sim Output")
@@ -85,7 +85,7 @@ def tank_pressure_sim(pressure_min_psi, pressure_max_psi_exclusive, pressure_ste
         # full Graph of Simulation 
         plt.plot(sim_df.index, sim_df["delta_v"], label="delta v (ft/s)")
         plt.plot(sim_df.index, sim_df["avg_isp"], label="isp (s)")
-        plt.plot(sim_df.index, sim_df["prop_tank_temp_deg_c"], label="prop tank temp (°C)")
+        plt.plot(sim_df.index, sim_df["ox_temp_deg_c"], label="Oxidizer temp. (°C)")
         plt.plot(sim_df.index, sim_df["fuel_mass"], label="fuel mass (kg)")
         plt.plot(sim_df.index, sim_df["ox_mass"], label="oxidizer mass (kg)")
         plt.xlabel("Pressure (Psi)")
@@ -104,13 +104,13 @@ def tank_pressure_sim(pressure_min_psi, pressure_max_psi_exclusive, pressure_ste
         plt.title("Isp")
         plt.plot(sim_df.index, sim_df["avg_isp"], 'c')
         plt.xlabel("Pressure (Psi)")
-        plt.ylabel("isp (s)")
+        plt.ylabel("Isp (s)")
 
         plt.figure(3)
-        plt.title("Propellent Masses")
-        plt.plot(sim_df.index, sim_df["prop_tank_temp_deg_c"], 'm')
+        plt.title("Oxidizer Temperature")
+        plt.plot(sim_df.index, sim_df["ox_temp_deg_c"], 'm')
         plt.xlabel("Pressure (Psi)")
-        plt.ylabel("prop tank temp (°C)")
+        plt.ylabel("Oxidizer Temp. (°C)")
 
         plt.figure(4)
         plt.title("Propellent Masses")
@@ -171,7 +171,7 @@ def blowdown_systems_comparison(blowdown_system_masses, tank_sim_df):
     plt.plot(tank_sim_df.index, tank_sim_df["avg_isp"], label="Our Archetecture (psi)")
     plt.plot(sim_df.index, sim_df["avg_isp"], label="Nitrogen Piloted (kg)")
     plt.xlabel("Data with Respective Value")
-    plt.ylabel("isp (s)")
+    plt.ylabel("Isp (s)")
     plt.legend()
     plt.show()
 
