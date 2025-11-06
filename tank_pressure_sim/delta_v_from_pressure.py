@@ -121,7 +121,7 @@ def residual_vapour_mass(burn_tank_end_pressure_psi, prop_tank_volume_meter_cube
 
 
 def delta_v_calc(avg_isp, wet_mass, dry_mass):
-    c = avg_isp / g_imp
+    c = avg_isp * g_imp
     dv_ft_per_sec = c * np.log(wet_mass/dry_mass)
     return dv_ft_per_sec
 
